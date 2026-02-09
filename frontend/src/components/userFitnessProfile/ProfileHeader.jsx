@@ -59,6 +59,8 @@ export default function ProfileHeader() {
                 height: userData.height,
                 goal: userData.goal,
                 imageFile: userData.profileImage,
+                email: userData.email,
+                fullName: userData.fullName,
             });
         }
     }, [userData]);
@@ -127,8 +129,8 @@ export default function ProfileHeader() {
 
                 </Avatar>
                 <div className="flex flex-col">
-                    <span className="font-semibold">Prince Bajgain</span>
-                    <span className="text-muted-foreground">prrncebajgain@gmail.com</span>
+                    <span className="font-semibold">{userData.fullName}</span>
+                    <span className="text-muted-foreground">{userData.email}</span>
                 </div>
             </div>
             <TypeWriter className="bg-linear-to-br from-chart-2 text-3xl to-foreground font-space-grotesk text-transparent bg-clip-text w-160 text-center">

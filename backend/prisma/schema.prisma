@@ -19,6 +19,30 @@ enum FriendRequestStatus {
   REJECTED
 }
 
+enum DonationApplicationStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+model DonationApplication {
+  id              Int      @id @default(autoincrement())
+  userId          Int
+  donationPostId  Int?     // <-- optional now
+
+  user            User         @relation(fields: [userId], references: [id])
+  donationPost    DonationPost? @relation(fields: [donationPostId], references: [id], onDelete: SetNull)
+
+  status          DonationApplicationStatus @default(PENDING)
+  message         String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@unique([userId, donationPostId])
+}
+
+
+
 model Friend {
   id        Int  @id @default(autoincrement())
 
@@ -51,6 +75,9 @@ model User {
   friends           Friend[]  @relation("UserToFriends")
   friendOf          Friend[]  @relation("FriendToUsers")
 
+  donationPosts        DonationPost[]
+  donationApplications DonationApplication[]
+
 
   verifyOtp         String    @default("")
   verifyOtpExpireAt BigInt    @default(0)
@@ -80,4 +107,25 @@ model FriendRequest {
 
   @@unique([senderId, receiverId])
 }
+
+model DonationPost {
+  id          Int      @id @default(autoincrement())
+
+  title       String
+  description String
+  image       String?
+
+  // Creator of the donation post
+  creatorId   Int
+  creator     User     @relation(fields: [creatorId], references: [id])
+
+  // Applications from users
+  applications DonationApplication[]
+
+  isActive    Boolean  @default(true)
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
 

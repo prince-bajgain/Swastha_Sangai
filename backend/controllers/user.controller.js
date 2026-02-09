@@ -6,6 +6,9 @@ export const getUserData = async (req, res) => {
         const userId = req.userId;
         const user = await prisma.user.findUnique({
             where: { id: userId },
+            include: {
+                friends: true
+            }
         });
         console.log(user.profileImage);
 

@@ -14,8 +14,9 @@ import { toast } from 'react-toastify'
 const FriendsMain = () => {
     const navigate = useNavigate();
     const { userData, backendUrl } = useContext(AuthContext);
+    const [friendsList, setFriendsList] = useState([]);
     const [allUsers, setAllUsers] = useState([]);
-    const [sentRequests,setSentRequests] = useState([]);
+    const [sentRequests, setSentRequests] = useState([]);
     const [suggestedFriends, setSuggestedFriends] = useState([]);
 
     const fetchAllUsers = async () => {
@@ -28,17 +29,33 @@ const FriendsMain = () => {
     }
 
     const fetchSentRequests = async () => {
-    try {
-      const response = await axios.get(`${backendUrl}/api/friendship/sent-requests`, { withCredentials: true });
-      setSentRequests(response.data.sentRequests);
-      console.log("All pending sent requests fetched successfully");
+        try {
+            const response = await axios.get(`${backendUrl}/api/friendship/sent-requests`, { withCredentials: true });
+            setSentRequests(response.data.sentRequests);
+            console.log("All pending sent requests fetched successfully");
 
-    } catch (error) {
-      console.log("Error while fetching sent pending requests.", error?.response?.data?.message);
+        } catch (error) {
+            console.log("Error while fetching sent pending requests.", error?.response?.data?.message);
+        }
     }
-  }
 
-//   Doing making filter of friends
+    useEffect(() => {
+        if (!userData || !allUsers) return;
+
+
+        const friendIds = userData.friends.map(friend =>
+            friend.userId === userData.id ? friend.friendId : friend.userId
+        );
+
+        const friends = allUsers.filter(user =>
+            friendIds.includes(user.id)
+        );
+
+        setFriendsList(friends);
+    }, [userData, allUsers]);
+
+
+
 
     useEffect(() => {
         if (userData == null || sentRequests == null) return;
@@ -46,10 +63,10 @@ const FriendsMain = () => {
         const sentRequestReceiverIds = sentRequests.map(req => req.receiver.id);
         const friendsIds = userData.friends.map(friend => friend.friendId);
         console.log(sentRequestReceiverIds);
-        
+
         const filteredSuggestions = allUsers.filter(user => user.id !== userData.id && !sentRequestReceiverIds.includes(user.id) && !friendsIds.includes(user.id));
         console.log(filteredSuggestions);
-        
+
         setSuggestedFriends(filteredSuggestions);
     }, [allUsers, userData, sentRequests]);
 
@@ -61,7 +78,7 @@ const FriendsMain = () => {
 
     const sendFriendRequest = async (receiverId) => {
         try {
-            const response = await axios.post(`${backendUrl}/api/friendship/send-request`,{receiverId:receiverId},{withCredentials: true});
+            const response = await axios.post(`${backendUrl}/api/friendship/send-request`, { receiverId: receiverId }, { withCredentials: true });
             toast.success(response?.data?.message);
             fetchSentRequests();
         } catch (error) {
@@ -103,37 +120,43 @@ const FriendsMain = () => {
                     <div id="left" className='w-2/4 h-full flex flex-col gap-3 py-3 px-5 rounded-xl bg-foreground/10'>
                         <span className='text-2xl tracking-[0.1em] text-foreground/80 font-space-grotesk'>_ Friends</span>
                         <div className='main_list flex flex-col p-2 overflow-scroll gap-3 h-[85%]'>
-                            <div id="left" className='w-full min-h-20 bg-foreground/20 flex justify-between gap-4 items-center px-3 rounded-xl'>
-                                <div className="left flex gap-4 items-center">
-                                    <Avatar className="size-15 relative overflow-visible cursor-pointer" onClick={() => { navigate('/home/fitness-profile') }}>
-                                        <AvatarImage
-                                            src={
-                                                userData?.imageFile
-                                                    ? `${backendUrl}/profile-pics/${userData.imageFile}`
-                                                    : "/profile_pic_placeholder.jpg"
-                                            }
-                                            className="rounded-full"
-                                        />
+                            {friendsList.length > 0 ? friendsList.map(friend => (
+                                <div
+                                    key={friend.id}
+                                    className='w-full min-h-20 bg-foreground/20 flex justify-between gap-4 items-center px-3 rounded-xl'
+                                >
+                                    <div className="flex gap-4 items-center">
+                                        <Avatar className="size-15 relative overflow-visible">
+                                            <AvatarImage
+                                                src={
+                                                    friend.profileImage
+                                                        ? `${backendUrl}/profile-pics/${friend.profileImage}`
+                                                        : "/profile_pic_placeholder.jpg"
+                                                }
+                                                className='rounded-full'
+                                            />
+                                            <AvatarFallback>{friend.fullName[0]}</AvatarFallback>
+                                            <div className='absolute bottom-0 right-0 size-4 bg-green-500 rounded-full border-2 border-background/20'></div>
+                                        </Avatar>
 
+                                        <div className='flex flex-col gap-1'>
+                                            <span className='ml-3 font-semibold'>{friend.fullName}</span>
+                                            <span className='ml-3 text-xs text-slate-400'>Online</span>
+                                        </div>
+                                    </div>
 
-                                        <AvatarFallback>profileImage</AvatarFallback>
-                                        <div className='absolute bottom-0 right-0 size-4 bg-green-500 rounded-full border-2 border-background/20'></div>
-                                    </Avatar>
-
-                                    <div className='flex flex-col gap-1'>
-                                        <span className='ml-3 font-semibold'>Prince Bajgain</span>
-                                        <span className='ml-3 text-xs text-slate-400'>Online</span>
+                                    <div className='flex items-center'>
+                                        <span className='flex gap-2 items-center px-4 py-2 bg-primary/20 text-primary rounded-full cursor-pointer'>
+                                            <MdVideoCall />
+                                            <span>Call Now</span>
+                                        </span>
                                     </div>
                                 </div>
-                                <div className='flex items-center'>
-                                    <span className='flex gap-2 items-center px-4 py-2 bg-primary/20 text-primary rounded-full cursor-pointer hover:bg-primary/30 transition-all duration-500'>
-                                        <MdVideoCall />
-                                        <span>Call Now</span>
-                                    </span>
-                                </div>
-
-                            </div>
+                            )) : (
+                                <span className='text-muted-foreground'>No friends yet.</span>
+                            )}
                         </div>
+
 
 
                     </div>
@@ -164,7 +187,7 @@ const FriendsMain = () => {
                                         </div>
                                     </div>
                                     <div className='flex items-center'>
-                                        <span className='flex gap-2 items-center px-4 py-2 bg-primary/20 text-primary rounded-full cursor-pointer hover:bg-primary/30 transition-all duration-500' onClick={()=>sendFriendRequest(user.id)}>
+                                        <span className='flex gap-2 items-center px-4 py-2 bg-primary/20 text-primary rounded-full cursor-pointer hover:bg-primary/30 transition-all duration-500' onClick={() => sendFriendRequest(user.id)}>
                                             <PlusIcon />
                                             <span>Add Friend</span>
                                         </span>
