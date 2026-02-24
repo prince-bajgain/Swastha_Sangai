@@ -89,6 +89,18 @@ const DashboardMain = () => {
     }
   }
 
+  const acceptApplication = async (data) => {
+    try {
+      const response = await axios.patch(`${backendUrl}/api/donations/application/status`,data, { withCredentials: true });
+      toast.success("Application accepted successfully.")
+      console.log("The donation application got accepted successfully.");
+    } catch (error) {
+      console.log("Error while accepting donation application.", error?.response?.data?.message);
+      toast.error(error.response?.data?.message);
+    }
+  }
+
+
   const fetchReceivedPendingRequests = async () => {
     try {
       const response = await axios.get(`${backendUrl}/api/friendship/received-pending-requests`, { withCredentials: true });
@@ -229,7 +241,7 @@ const DashboardMain = () => {
                   </div>
                 </div>
                 <div className='flex items-center'>
-                  <span className='flex gap-2 items-center px-4 py-2 bg-primary/20 text-primary rounded-full cursor-pointer hover:bg-primary/30 transition-all duration-500' onClick={() => acceptFriendRequest(request.sender.id)}>
+                  <span className='flex gap-2 items-center px-4 py-2 bg-primary/20 text-primary rounded-full cursor-pointer hover:bg-primary/30 transition-all duration-500' onClick={() => acceptApplication({applicationId: app?.id, status:"APPROVED"})}>
                     <MdApproval />
                     <span>Accept Now</span>
                   </span>
@@ -268,8 +280,8 @@ const DashboardMain = () => {
                   </div>
                 </div>
                  <div className='flex items-center'>
-                  <span className='flex gap-2 items-center px-4 py-2 bg-background/20 text-amber-300 rounded-full transition-all duration-500'>
-                    <span>pending</span>
+                  <span className={`flex gap-2 items-center px-4 py-2 bg-background/20 ${app?.status.toLowerCase() === 'approved' ? "text-green-300" : "text-amber-300"} rounded-full transition-all duration-500`}>
+                    <span>{app?.status.toLowerCase()}</span>
                   </span>
                 </div>
 

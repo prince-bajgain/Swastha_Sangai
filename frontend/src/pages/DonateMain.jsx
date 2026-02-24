@@ -33,6 +33,8 @@ const DonateMain = () => {
         withCredentials: true,
       });
       setDonations(res.data.donations);
+      console.log("Donations: ",res.data.donations);
+      
     } catch (error) {
       console.error(error);
       toast.error("Failed to fetch donations");
@@ -44,6 +46,7 @@ const DonateMain = () => {
   useEffect(() => {
     fetchDonations();
   }, []);
+
 
   // ---------------- APPLY FOR DONATION ----------------
   const applyForDonation = async (donationPostId) => {
@@ -108,7 +111,7 @@ const DonateMain = () => {
 
   // ---------------- FILTER ----------------
   const myDonations = donations.filter((d) => d.creatorId === userData?.id);
-  const otherDonations = donations.filter((d) => d.creatorId !== userData?.id);
+  const otherDonations = donations.filter((d) => d.creatorId !== userData?.id && d.isActive === true);
 
   return (
     <div className="w-full h-full flex px-10 py-10 flex-col">
@@ -237,17 +240,22 @@ const DonateMain = () => {
                     </p>
                   </div>
 
-                  <div className="flex gap-3 mt-2">
+                  <div className="flex justify-between mt-2">
                     {/* Edit functionality can be implemented later */}
-                    <button className="flex gap-2 items-center px-3 py-1 bg-primary/20 text-primary rounded-full">
+                    <div className="flex gap-3">
+                        <button className="flex gap-2 items-center px-3 py-1 bg-primary/20 text-primary rounded-full">
                       <MdCreate /> Edit
                     </button>
                     <button
                       onClick={() => deleteDonation(donation.id)}
-                      className="flex gap-2 items-center px-3 py-1 bg-red-500/20 text-red-500 rounded-full"
+                      className="flex gap-2 items-center px-3 py-1 bg-background/20 text-red-400 rounded-full"
                     >
                       <MdDelete /> Delete
                     </button>
+                    </div>
+                    <span className={`flex gap-2 items-center px-4 py-2 bg-background/20  rounded-full transition-all duration-500 ${donation.isActive === true ? "text-green-300" : "text-red-400"}`}>{donation.isActive === true ? "Active" : "Inactive"}</span>
+                  
+
                   </div>
                 </div>
               </div>
@@ -261,7 +269,7 @@ const DonateMain = () => {
           <div className="flex flex-col gap-3 mt-4 overflow-y-auto h-[85%]">
             {otherDonations.length === 0 && (
               <span className="text-muted-foreground">
-                No donation posts available.
+                No active donation posts available.
               </span>
             )}
 

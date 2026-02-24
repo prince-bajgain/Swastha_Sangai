@@ -1,8 +1,10 @@
 import React from 'react'
 import { Button } from './ui/button'
 import { IoIosArrowRoundDown } from "react-icons/io";
+import { useNavigate } from 'react-router-dom';
 
 const HeroSection = () => {
+  const navigate = useNavigate();
   return (
     <div className='bg-linear-to-br from-background to-primary/20 font-nunito-sans w-full flex items-center justify-center flex-col min-h-160'>
       <span className='text-foreground text-4xl text-center md:text-7xl font-semibold'>Connecting people for a</span><br/>
@@ -12,7 +14,7 @@ const HeroSection = () => {
         <Button variant={'default'} className={'cursor-pointer'}>Get Started</Button>
         <Button variant={'outline'} className={'cursor-pointer'}>
             <IoIosArrowRoundDown />
-            <span>Learn More</span>
+            <span onClick={()=>{navigate('/home/dashboard')}}>Learn More</span>
         </Button>
       </div>
     </div>

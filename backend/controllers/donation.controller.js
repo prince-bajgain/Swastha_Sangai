@@ -28,10 +28,10 @@ export const createDonationPost = async (req, res) => {
   }
 };
 
+
 export const getAllDonationPosts = async (req, res) => {
   try {
     const donations = await prisma.donationPost.findMany({
-      where: { isActive: true },
       orderBy: { createdAt: "desc" },
       include: {
         creator: {
@@ -98,6 +98,7 @@ export const getIncomingDonationApplications = async (req, res) => {
       where: {
         donationPost: {
           creatorId: userId,
+          isActive: true,
         },
       },
       include: {
@@ -132,7 +133,7 @@ export const getOutgoingDonationApplications = async (req, res) => {
     const userId = req.userId;
 
     const applications = await prisma.donationApplication.findMany({
-      where: {userId: userId},
+      where: { userId: userId },
       include: {
         donationPost: {
           select: {
@@ -177,6 +178,13 @@ export const updateDonationApplicationStatus = async (req, res) => {
       data: { status },
     });
 
+    if (status === "APPROVED") {
+      await prisma.donationPost.update({
+        where: { id: application.donationPostId },
+        data: { isActive: false },
+      });
+    }
+
     res.status(200).json({
       message: `Application ${status.toLowerCase()}`,
       updatedApplication,
@@ -210,5 +218,6 @@ export const deleteDonationPost = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
+
 
 
