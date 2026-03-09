@@ -10,6 +10,7 @@ const EmailVerify = () => {
 
   const [otpDigits, setOtpDigits] = useState(["", "", "", "", "", ""]);
 
+  // Submit Handler
   const handleSubmit = async (e) => {
     e.preventDefault();
 
