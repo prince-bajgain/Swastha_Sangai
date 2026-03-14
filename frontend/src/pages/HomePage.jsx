@@ -6,7 +6,6 @@ const HomePage = () => {
     <div className='bg-background w-screen h-screen'>
         <Outlet />
     </div>
-    
   )
 }
 

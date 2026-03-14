@@ -6,9 +6,13 @@ const Dashboard = () => {
     useEffect(() => {
         document.documentElement.classList.add("dark");
     }, []);
+
     return (
         <div className='flex w-screen h-screen'>
-            <div id="left" className='w-2/10'><SideBar /></div>
+            <div id="left" className='w-2/10'>
+                <SideBar />
+            </div>
+
             <div id="right" className='w-8/10 h-screen'>
                 <Outlet />
             </div>
