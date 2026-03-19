@@ -1,13 +1,14 @@
 import express from "express";
 
 import {
-  createDonationPost,
-  getAllDonationPosts,
   applyForDonation,
-  updateDonationApplicationStatus,
+  createDonationPost,
   deleteDonationPost,
+  getAllDonationPosts,
   getIncomingDonationApplications,
   getOutgoingDonationApplications,
+  reactToDonationPost,
+  updateDonationApplicationStatus,
 } from "../controllers/donation.controller.js";
 import { checkAuth } from "../middlewares/auth.middleware.js";
 import uploadFactory from "../middlewares/uploadFactory.js";
@@ -34,6 +35,12 @@ donationRouter.post(
   "/apply",
   checkAuth,
   applyForDonation
+);
+
+donationRouter.post(
+  "/:id/react",
+  checkAuth,
+  reactToDonationPost
 );
 
 donationRouter.get(

@@ -1,15 +1,16 @@
-import { SearchIcon } from "lucide-react";
-import React, { useContext, useEffect, useState } from "react";
 import {
   Avatar,
   AvatarFallback,
   AvatarImage,
 } from "@/components/ui/avatar";
-import { MdCreate, MdDelete, MdNotifications } from "react-icons/md";
-import { AuthContext } from "../context/AuthContext";
-import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import { SearchIcon } from "lucide-react";
+import { useContext, useEffect, useState } from "react";
+import { BiLike } from "react-icons/bi";
+import { MdCreate, MdDelete, MdNotifications } from "react-icons/md";
+import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
+import { AuthContext } from "../context/AuthContext";
 
 const DonateMain = () => {
   const navigate = useNavigate();
@@ -33,8 +34,8 @@ const DonateMain = () => {
         withCredentials: true,
       });
       setDonations(res.data.donations);
-      console.log("Donations: ",res.data.donations);
-      
+      console.log("Donations: ", res.data.donations);
+
     } catch (error) {
       console.error(error);
       toast.error("Failed to fetch donations");
@@ -47,6 +48,33 @@ const DonateMain = () => {
     fetchDonations();
   }, []);
 
+  const handleLikeToggle = async (donation) => {
+  try {
+    const res = await axios.post(
+      `${backendUrl}/api/donations/${donation.id}/react`,
+      { type: "LIKE" }, // always "LIKE"
+      { withCredentials: true }
+    );
+
+    // Update local state
+    setDonations((prev) =>
+      prev.map((d) => {
+        if (d.id === donation.id) {
+          return {
+            ...d,
+            userReaction: d.userReaction === "LIKE" ? null : "LIKE",
+            likeCount: res.data.likeCount, // backend should return updated count
+            dislikeCount: res.data.dislikeCount, // if needed
+          };
+        }
+        return d;
+      })
+    );
+  } catch (error) {
+    console.error(error);
+    toast.error("Failed to toggle like");
+  }
+};
 
   // ---------------- APPLY FOR DONATION ----------------
   const applyForDonation = async (donationPostId) => {
@@ -243,18 +271,29 @@ const DonateMain = () => {
                   <div className="flex justify-between mt-2">
                     {/* Edit functionality can be implemented later */}
                     <div className="flex gap-3">
-                        <button className="flex gap-2 items-center px-3 py-1 bg-primary/20 text-primary rounded-full">
-                      <MdCreate /> Edit
-                    </button>
-                    <button
-                      onClick={() => deleteDonation(donation.id)}
-                      className="flex gap-2 items-center px-3 py-1 bg-background/20 text-red-400 rounded-full"
-                    >
-                      <MdDelete /> Delete
-                    </button>
+                      <button className="flex gap-2 items-center px-3 py-1 bg-primary/20 text-primary rounded-full">
+                        <MdCreate /> Edit
+                      </button>
+                      <button
+                        onClick={() => deleteDonation(donation.id)}
+                        className="flex gap-2 items-center px-3 py-1 bg-background/20 text-red-400 rounded-full"
+                      >
+                        <MdDelete /> Delete
+                      </button>
+                      {/* LIKE TOGGLE BUTTON */}
+                      <button
+                        onClick={() => handleLikeToggle(donation)}
+                        className={`flex items-center gap-1 px-2 py-1 rounded ${donation.userReaction === "LIKE"
+                            ? "bg-blue-500 text-white"
+                            : "bg-background/20"
+                          }`}
+                      >
+                        <BiLike />
+                        {donation.likeCount || 0}
+                      </button>
                     </div>
                     <span className={`flex gap-2 items-center px-4 py-2 bg-background/20  rounded-full transition-all duration-500 ${donation.isActive === true ? "text-green-300" : "text-red-400"}`}>{donation.isActive === true ? "Active" : "Inactive"}</span>
-                  
+
 
                   </div>
                 </div>

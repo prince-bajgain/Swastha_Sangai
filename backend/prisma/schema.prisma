@@ -13,6 +13,11 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum ReactionType {
+  LIKE
+  DISLIKE
+}
+
 enum FriendRequestStatus {
   PENDING
   ACCEPTED
@@ -41,6 +46,17 @@ model DonationApplication {
   @@unique([userId, donationPostId])
 }
 
+model DonationReaction {
+  id              Int      @id @default(autoincrement())
+  userId          Int
+  donationPostId  Int
+  type            ReactionType
+
+  user            User           @relation(fields: [userId], references: [id])
+  donationPost    DonationPost   @relation(fields: [donationPostId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, donationPostId]) // one reaction per user
+}
 
 
 model Friend {
@@ -74,6 +90,8 @@ model User {
 
   friends           Friend[]  @relation("UserToFriends")
   friendOf          Friend[]  @relation("FriendToUsers")
+
+  donationReactions DonationReaction[]
 
   donationPosts        DonationPost[]
   donationApplications DonationApplication[]
@@ -112,6 +130,7 @@ model DonationPost {
   id          Int      @id @default(autoincrement())
 
   title       String
+  
   description String
   image       String?
 
@@ -121,6 +140,8 @@ model DonationPost {
 
   // Applications from users
   applications DonationApplication[]
+
+  reactions DonationReaction[]
 
   isActive    Boolean  @default(true)
 

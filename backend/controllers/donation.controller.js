@@ -28,6 +28,56 @@ export const createDonationPost = async (req, res) => {
   }
 };
 
+export const reactToDonationPost = async (req, res) => {
+  try {
+    const userId = req.userId;
+    const donationPostId = Number(req.params.id);
+    const { type } = req.body; // now only "LIKE"
+
+    if (type !== "LIKE") {
+      return res.status(400).json({ message: "Invalid reaction type" });
+    }
+
+    // Check if post exists
+    const post = await prisma.donationPost.findUnique({
+      where: { id: donationPostId },
+    });
+    if (!post) return res.status(404).json({ message: "Donation post not found" });
+
+    // Check existing like
+    const existingLike = await prisma.donationReaction.findUnique({
+      where: {
+        userId_donationPostId: { userId, donationPostId },
+      },
+    });
+
+    // Toggle logic: if exists → remove, else → create
+    if (existingLike) {
+      await prisma.donationReaction.delete({
+        where: { userId_donationPostId: { userId, donationPostId } },
+      });
+    } else {
+      await prisma.donationReaction.create({
+        data: { userId, donationPostId, type: "LIKE" },
+      });
+    }
+
+    // Count likes after toggle
+    const likeCount = await prisma.donationReaction.count({
+      where: { donationPostId, type: "LIKE" },
+    });
+
+    res.status(200).json({
+      message: existingLike ? "Like removed" : "Like added",
+      likeCount,
+      userReaction: existingLike ? null : "LIKE",
+    });
+  } catch (error) {
+    console.error("Reaction error:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
 
 export const getAllDonationPosts = async (req, res) => {
   try {
