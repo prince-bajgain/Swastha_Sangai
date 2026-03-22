@@ -1,9 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -25,39 +19,6 @@ enum DonationApplicationStatus {
   REJECTED
 }
 
-model DonationApplication {
-  id              Int      @id @default(autoincrement())
-  userId          Int
-  donationPostId  Int?     // <-- optional now
-
-  user            User         @relation(fields: [userId], references: [id])
-  donationPost    DonationPost? @relation(fields: [donationPostId], references: [id], onDelete: SetNull)
-
-  status          DonationApplicationStatus @default(PENDING)
-  message         String?
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
-
-  @@unique([userId, donationPostId])
-}
-
-
-
-model Friend {
-  id        Int  @id @default(autoincrement())
-
-  userId    Int
-  friendId  Int
-
-  user      User @relation("UserToFriends", fields: [userId], references: [id])
-  friend    User @relation("FriendToUsers", fields: [friendId], references: [id])
-
-  createdAt DateTime @default(now())
-
-  @@unique([userId, friendId])
-}
-
-
 model User {
   id                Int       @id @default(autoincrement())
   fullName          String
@@ -75,9 +36,11 @@ model User {
   friends           Friend[]  @relation("UserToFriends")
   friendOf          Friend[]  @relation("FriendToUsers")
 
-  donationPosts        DonationPost[]
+  donationPosts     DonationPost[]
   donationApplications DonationApplication[]
 
+  // 🔥 COMMENTS
+  comments          Comment[]
 
   verifyOtp         String    @default("")
   verifyOtpExpireAt BigInt    @default(0)
@@ -89,6 +52,72 @@ model User {
 
   createdAt         DateTime  @default(now())
   updatedAt         DateTime  @updatedAt
+}
+
+model DonationPost {
+  id          Int      @id @default(autoincrement())
+  title       String
+  description String
+  image       String?
+
+  creatorId   Int
+  creator     User     @relation(fields: [creatorId], references: [id])
+
+  applications DonationApplication[]
+
+ 
+  comments    Comment[]
+
+  isActive    Boolean  @default(true)
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Comment {
+  id        Int      @id @default(autoincrement())
+
+  content   String
+
+  // Relations
+  userId    Int
+  postId    Int
+
+  user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  post      DonationPost  @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model DonationApplication {
+  id              Int      @id @default(autoincrement())
+  userId          Int
+  donationPostId  Int?
+
+  user            User         @relation(fields: [userId], references: [id])
+  donationPost    DonationPost? @relation(fields: [donationPostId], references: [id], onDelete: SetNull)
+
+  status          DonationApplicationStatus @default(PENDING)
+  message         String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@unique([userId, donationPostId])
+}
+
+model Friend {
+  id        Int  @id @default(autoincrement())
+
+  userId    Int
+  friendId  Int
+
+  user      User @relation("UserToFriends", fields: [userId], references: [id])
+  friend    User @relation("FriendToUsers", fields: [friendId], references: [id])
+
+  createdAt DateTime @default(now())
+
+  @@unique([userId, friendId])
 }
 
 model FriendRequest {
@@ -107,25 +136,3 @@ model FriendRequest {
 
   @@unique([senderId, receiverId])
 }
-
-model DonationPost {
-  id          Int      @id @default(autoincrement())
-
-  title       String
-  description String
-  image       String?
-
-  // Creator of the donation post
-  creatorId   Int
-  creator     User     @relation(fields: [creatorId], references: [id])
-
-  // Applications from users
-  applications DonationApplication[]
-
-  isActive    Boolean  @default(true)
-
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-}
-
-
