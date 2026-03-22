@@ -254,6 +254,7 @@ const FriendsMain = () => {
         );
         const friends = allUsers.filter(user => friendIds.includes(user.id));
         setFriendsList(friends);
+        
     }, [userData, allUsers]);
 
     useEffect(() => {
@@ -267,6 +268,23 @@ const FriendsMain = () => {
         );
         setSuggestedFriends(filteredSuggestions);
     }, [allUsers, userData, sentRequests]);
+
+    useEffect(() => {
+
+        if (!socket || !userData) return;
+
+        console.log("Socket instance:", socket);
+        console.log("User ID:", userData.id);
+
+        socket.on("onlineUsers", (users) => {
+            console.log("Received onlineUsers event:", users);
+            setOnlineFriends(users);
+        });
+
+        return () => {
+            socket.off("onlineUsers");
+        };
+    }, [socket, userData]);
 
     const sendFriendRequest = async (receiverId) => {
         try {

@@ -6,11 +6,9 @@ import { fileURLToPath } from "url";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// helper to create storage dynamically
 const createStorage = (folderName) => {
   const uploadDir = path.join(__dirname, "..", folderName);
 
-  // ensure folder exists
   if (!fs.existsSync(uploadDir)) {
     fs.mkdirSync(uploadDir, { recursive: true });
   }
@@ -27,7 +25,7 @@ const createStorage = (folderName) => {
   });
 };
 
-// factory function
+
 const uploadFactory = (folderName) =>
   multer({
     storage: createStorage(folderName),

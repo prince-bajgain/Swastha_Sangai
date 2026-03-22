@@ -1,4 +1,3 @@
-
 import {
     Avatar,
     AvatarFallback,
@@ -62,9 +61,19 @@ export default function ProfileHeader() {
                 email: userData.email,
                 fullName: userData.fullName,
             });
+         
+            
         }
     }, [userData]);
 
+    // ✅ Early return: prevents crash when userData hasn't loaded yet
+    if (!userData) {
+        return (
+            <div className="flex justify-center items-center h-40">
+                <span className="text-muted-foreground">Loading profile...</span>
+            </div>
+        );
+    }
 
     const updateFitnessProfile = async () => {
         try {
@@ -129,12 +138,13 @@ export default function ProfileHeader() {
 
                 </Avatar>
                 <div className="flex flex-col">
+                    {/* ✅ Safe to access directly now since we guard above */}
                     <span className="font-semibold">{userData.fullName}</span>
                     <span className="text-muted-foreground">{userData.email}</span>
                 </div>
             </div>
             <TypeWriter className="bg-linear-to-br from-chart-2 text-3xl to-foreground font-space-grotesk text-transparent bg-clip-text w-160 text-center">
-                <span className="text-primary">“</span>{motivationalQuote}<span className="text-primary">”</span>
+                <span className="text-primary">"</span>{motivationalQuote}<span className="text-primary">"</span>
             </TypeWriter>
             <span className=""></span>
             <div className="flex flex-row gap-3">
