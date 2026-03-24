@@ -3,8 +3,8 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider = "sqlite"
+  url      = "file:./dev.db"
 }
 
 enum FriendRequestStatus {
@@ -39,7 +39,6 @@ model User {
   donationPosts     DonationPost[]
   donationApplications DonationApplication[]
 
-  // 🔥 COMMENTS
   comments          Comment[]
 
   verifyOtp         String    @default("")
@@ -58,14 +57,13 @@ model DonationPost {
   id          Int      @id @default(autoincrement())
   title       String
   description String
+  goalAmount  Float    // ✅ ADD THIS FIELD
   image       String?
 
   creatorId   Int
   creator     User     @relation(fields: [creatorId], references: [id])
 
   applications DonationApplication[]
-
- 
   comments    Comment[]
 
   isActive    Boolean  @default(true)
@@ -76,10 +74,8 @@ model DonationPost {
 
 model Comment {
   id        Int      @id @default(autoincrement())
-
   content   String
 
-  // Relations
   userId    Int
   postId    Int
 
