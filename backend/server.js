@@ -9,6 +9,7 @@ import userRouter from "./routes/user.route.js";
 import friendshipRouter from "./routes/friendship.route.js";
 import donationRouter from "./routes/donation.route.js";
 import commentRouter from "./routes/comment.route.js";
+import streakRoutes from "./routes/streakRoutes.js"; 
 
 import { fileURLToPath } from "url";
 import path from "path";
@@ -19,17 +20,17 @@ dotenv.config();
 const app = express();
 const port = process.env.PORT || 5000;
 
-// ===============================
+
 // 🔥 CREATE HTTP SERVER
-// ===============================
+
 const server = http.createServer(app);
 
-// ===============================
+
 // 🔥 SOCKET.IO SETUP
-// ===============================
+
 const io = new Server(server, {
   cors: {
-    origin: ["http://localhost:5173", "http://192.168.1.139:5173"],
+    origin: ["http://localhost:5173", "http://localhost:5174", "http://192.168.1.139:5173"],
     credentials: true
   }
 });
@@ -39,9 +40,9 @@ const users = new Map();
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// ===============================
+
 // 🔥 ONLINE USERS UPDATE
-// ===============================
+
 const updateOnlineUsers = () => {
   const onlineUserIds = Array.from(users.keys());
   console.log("Online Users:", onlineUserIds);
@@ -49,9 +50,9 @@ const updateOnlineUsers = () => {
   io.emit("onlineUsers", onlineUserIds);
 };
 
-// ===============================
+
 // 🔌 SOCKET SERVER
-// ===============================
+
 io.on("connection", (socket) => {
   console.log(`🟢 User Connected: ${socket.id}`);
 
@@ -63,7 +64,17 @@ io.on("connection", (socket) => {
     }
 
     users.set(userId, socket.id);
+    
+    // Add user to personal room for streak updates
+    socket.join(`user-${userId}`);
+    
     updateOnlineUsers();
+  });
+
+  //  Add handler for streak tracker
+  socket.on("user-join", (userId) => {
+    socket.join(`user-${userId}`);
+    console.log(`User ${userId} joined streak room`);
   });
 
   socket.on("outgoing:call", ({ fromOffer, to }) => {
@@ -115,17 +126,23 @@ app.use(cookieParser());
 
 app.use(
   cors({
-    origin: ["http://localhost:5173", "http://192.168.1.139:5173"],
+    origin: ["http://localhost:5173", "http://localhost:5174", "http://192.168.1.139:5173"],
     credentials: true,
   })
 );
 
-// 🔥 IMPORTANT (for comments socket)
+//  IMPORTANT (for comments socket)
 app.set("io", io);
 
-// ===============================
+// Add middleware to attach io to req for streak routes
+app.use((req, res, next) => {
+  req.io = io;
+  next();
+});
+
+
 // 📁 STATIC FILES
-// ===============================
+
 app.use(
   "/profile-pics",
   express.static(path.join(__dirname, "profile-pics"))
@@ -136,9 +153,9 @@ app.use(
   express.static(path.join(__dirname, "donation-images"))
 );
 
-// ===============================
+
 // 📡 ROUTES
-// ===============================
+
 app.get("/", (req, res) => {
   res.send("Server is running ....");
 });
@@ -148,12 +165,22 @@ app.use("/api/user", userRouter);
 app.use("/api/friendship", friendshipRouter);
 app.use("/api/donations", donationRouter);
 
-// 🔥 COMMENT ROUTE
+//  COMMENT ROUTE
 app.use("/api/comments", commentRouter);
 
-// ===============================
+//  ADD STREAK ROUTES - This is the missing part!
+app.use("/api/workout", streakRoutes);
+
+
 // 🚀 START SERVER
-// ===============================
+
 server.listen(port, () => {
   console.log(`🚀 Server running on http://localhost:${port}`);
+  console.log(`✅ Routes available:`);
+  console.log(`   - /api/auth`);
+  console.log(`   - /api/user`);
+  console.log(`   - /api/friendship`);
+  console.log(`   - /api/donations`);
+  console.log(`   - /api/comments`);
+  console.log(`   - /api/workout/streak`); 
 });

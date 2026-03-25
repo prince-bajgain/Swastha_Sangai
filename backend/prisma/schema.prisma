@@ -50,6 +50,9 @@ model User {
   resetOtp          String    @default("")
   resetOtpExpireAt  BigInt    @default(0)
 
+  // 🔥 WORKOUT STREAK - Add these lines
+  workouts          WorkoutLog[]  // Relationship to workout logs
+
   createdAt         DateTime  @default(now())
   updatedAt         DateTime  @updatedAt
 }
@@ -135,4 +138,17 @@ model FriendRequest {
   respondedAt DateTime?
 
   @@unique([senderId, receiverId])
+}
+
+// 🔥 WORKOUT LOG MODEL - Add this entire model
+model WorkoutLog {
+  id            Int       @id @default(autoincrement())
+  userId        Int       @map("user_id")
+  workoutDate   DateTime  @map("workout_date")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@unique([userId, workoutDate])
+  @@map("workout_logs")
 }
