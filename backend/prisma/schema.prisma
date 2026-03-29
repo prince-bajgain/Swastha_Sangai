@@ -142,13 +142,20 @@ model FriendRequest {
 
 // 🔥 WORKOUT LOG MODEL - Add this entire model
 model WorkoutLog {
-  id            Int       @id @default(autoincrement())
-  userId        Int       @map("user_id")
-  workoutDate   DateTime  @map("workout_date")
-  createdAt     DateTime  @default(now()) @map("created_at")
-  
-  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
+  id               Int       @id @default(autoincrement())
+  userId           Int       @map("user_id")
+  workoutDate      DateTime  @map("workout_date")
+  createdAt        DateTime  @default(now()) @map("created_at")
+
+  // New fields
+  verified         Boolean   @default(false)
+  verificationType String?
+  workoutDuration  Int?
+  workoutType      String?
+  verifiedAt       DateTime?
+
+  user             User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
   @@unique([userId, workoutDate])
   @@map("workout_logs")
 }

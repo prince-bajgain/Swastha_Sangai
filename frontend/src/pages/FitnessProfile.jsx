@@ -12,12 +12,12 @@ const FitnessProfile = () => {
             <div className="max-w-7xl mx-auto px-4 py-8 md:px-6 md:py-10">
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
                     {/* Left Column - Profile Card */}
-                    <div className="lg:sticky lg:top-8">
+                    <div className="lg:sticky mr-10  flex justify-center items-center px-5 lg:top-8">
                         <ProfileHeader />
                     </div>
                     
                     {/* Right Column - Streak Tracker */}
-                    <div>
+                    <div className='flex justify-center w-full '>
                         <WorkoutStreakTracker />
                     </div>
                 </div>
